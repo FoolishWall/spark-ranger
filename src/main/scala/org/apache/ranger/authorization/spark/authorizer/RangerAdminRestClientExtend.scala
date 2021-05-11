@@ -1,8 +1,9 @@
 package org.apache.ranger.authorization.spark.authorizer
 
+import com.sun.jersey.api.client.{ClientResponse, WebResource}
 import org.apache.commons.logging.{Log, LogFactory}
 import org.apache.ranger.admin.client.RangerAdminRESTClient
-import org.apache.ranger.plugin.util.ServicePolicies
+import org.apache.ranger.plugin.util.{ServicePolicies, ServiceTags}
 
 /**
  * @author qiang.bi
@@ -12,9 +13,29 @@ import org.apache.ranger.plugin.util.ServicePolicies
 class RangerAdminRestClientExtend extends RangerAdminRESTClient {
   private val LOG: Log = LogFactory.getLog(classOf[RangerAdminRestClientExtend])
 
-  override def getServicePoliciesIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServicePolicies = {
+  override def getServicePoliciesIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServiceTags = {
+    LOG.info("***serviceName***" + super.getServiceName)
+    LOG.info("***PluginId***" + super.getPluginId)
+    LOG.info("***ClusterName***" + super.getClusterName)
     LOG.info("***get policy***")
-    null
+
+    val serviceNameUrlParam = super.getServiceNameUrlParam
+    val restClient = super.getRestClient
+    val pluginId = super.getPluginId
+    val clusterName = super.getClusterName
+    val supportsPolicyDeltas = super.getSupportsPolicyDeltas
+
+    val webResource = restClient.getResource("/service/plugins/policies/download/" + serviceNameUrlParam)
+      .queryParam("lastKnownVersion", lastKnownVersion.toString)
+      .queryParam("lastActivationTime", lastActivationTimeInMillis.toString)
+      .queryParam("pluginId", pluginId).queryParam("clusterName", clusterName)
+      .queryParam("supportsPolicyDeltas", supportsPolicyDeltas)
+
+    val response = webResource.accept("application/json").get(classOf[ClientResponse])
+
+    LOG.info("***status***" + response.getStatus)
+
+    response.getEntity(classOf[ServiceTags])
   }
 
 }

@@ -1,9 +1,9 @@
 package org.apache.ranger.authorization.spark.authorizer
 
-import com.sun.jersey.api.client.{ClientResponse, WebResource}
+import com.sun.jersey.api.client.ClientResponse
 import org.apache.commons.logging.{Log, LogFactory}
 import org.apache.ranger.admin.client.RangerAdminRESTClient
-import org.apache.ranger.plugin.util.{ServicePolicies, ServiceTags}
+import org.apache.ranger.plugin.util.ServiceTags
 
 /**
  * @author qiang.bi
@@ -13,7 +13,7 @@ import org.apache.ranger.plugin.util.{ServicePolicies, ServiceTags}
 class RangerAdminRestClientExtend extends RangerAdminRESTClient {
   private val LOG: Log = LogFactory.getLog(classOf[RangerAdminRestClientExtend])
 
-  override def getServicePoliciesIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServiceTags = {
+  override def getServiceTagsIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServiceTags = {
     LOG.info("***serviceName***" + super.getServiceName)
     LOG.info("***PluginId***" + super.getPluginId)
     LOG.info("***ClusterName***" + super.getClusterName)

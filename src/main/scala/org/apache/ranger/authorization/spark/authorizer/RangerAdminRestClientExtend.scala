@@ -1,9 +1,9 @@
 package org.apache.ranger.authorization.spark.authorizer
 
-import com.sun.jersey.api.client.ClientResponse
 import org.apache.commons.logging.{Log, LogFactory}
 import org.apache.ranger.admin.client.RangerAdminRESTClient
-import org.apache.ranger.plugin.util.ServiceTags
+import org.apache.ranger.authorization.hadoop.config.RangerConfiguration
+import org.apache.ranger.plugin.util.{RangerRESTUtils, ServicePolicies}
 
 /**
  * @author qiang.bi
@@ -13,29 +13,26 @@ import org.apache.ranger.plugin.util.ServiceTags
 class RangerAdminRestClientExtend extends RangerAdminRESTClient {
   private val LOG: Log = LogFactory.getLog(classOf[RangerAdminRestClientExtend])
 
-  override def getServiceTagsIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServiceTags = {
-    LOG.info("***serviceName***" + super.getServiceName)
-    LOG.info("***PluginId***" + super.getPluginId)
-    LOG.info("***ClusterName***" + super.getClusterName)
+  private var serviceName = ""
+  private var appId = ""
+  private var pluginId = ""
+  private var clusterName = ""
+  private val restUtils = new RangerRESTUtils
+
+  override def init(serviceName: String, appId: String, propertyPrefix: String): Unit = {
+    super.init(serviceName, appId, propertyPrefix)
+    this.serviceName = serviceName
+    this.appId = appId
+    this.pluginId = this.restUtils.getPluginId(serviceName, appId);
+    this.clusterName = RangerConfiguration.getInstance.get(propertyPrefix + ".ambari.cluster.name", "")
+  }
+
+  override def getServicePoliciesIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServicePolicies = {
+    LOG.info("***serviceName***" + this.serviceName)
+    LOG.info("***PluginId***" + this.pluginId)
+    LOG.info("***ClusterName***" + this.clusterName)
     LOG.info("***get policy***")
-
-    val serviceNameUrlParam = super.getServiceNameUrlParam
-    val restClient = super.getRestClient
-    val pluginId = super.getPluginId
-    val clusterName = super.getClusterName
-    val supportsPolicyDeltas = super.getSupportsPolicyDeltas
-
-    val webResource = restClient.getResource("/service/plugins/policies/download/" + serviceNameUrlParam)
-      .queryParam("lastKnownVersion", lastKnownVersion.toString)
-      .queryParam("lastActivationTime", lastActivationTimeInMillis.toString)
-      .queryParam("pluginId", pluginId).queryParam("clusterName", clusterName)
-      .queryParam("supportsPolicyDeltas", supportsPolicyDeltas)
-
-    val response = webResource.accept("application/json").get(classOf[ClientResponse])
-
-    LOG.info("***status***" + response.getStatus)
-
-    response.getEntity(classOf[ServiceTags])
+    null
   }
 
 }

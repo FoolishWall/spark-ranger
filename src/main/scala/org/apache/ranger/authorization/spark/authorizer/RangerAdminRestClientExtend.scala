@@ -28,6 +28,8 @@ class RangerAdminRestClientExtend extends RangerAdminRESTClient {
   }
 
   override def getServicePoliciesIfUpdated(lastKnownVersion: Long, lastActivationTimeInMillis: Long): ServicePolicies = {
+    LOG.info("***lastKnownVersion***" + lastKnownVersion)
+    LOG.info("***lastActivationTimeInMillis***" + lastActivationTimeInMillis)
     LOG.info("***serviceName***" + this.serviceName)
     LOG.info("***PluginId***" + this.pluginId)
     LOG.info("***ClusterName***" + this.clusterName)

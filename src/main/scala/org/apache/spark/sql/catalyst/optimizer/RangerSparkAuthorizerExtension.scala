@@ -56,7 +56,9 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
       case r: RangerShowTablesCommand => r
       case r: RangerShowDatabasesCommand => r
       case _ =>
+        LOG.info("***plan***" + plan)
         val operationType: SparkOperationType = toOperationType(plan)
+        LOG.info("***operationType***" + operationType)
         val (in, out) = PrivilegesBuilder.build(plan)
         try {
           RangerSparkAuthorizer.checkPrivileges(spark, operationType, in, out)

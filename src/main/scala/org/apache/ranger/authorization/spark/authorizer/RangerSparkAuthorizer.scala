@@ -71,9 +71,12 @@ object RangerSparkAuthorizer {
       def addAccessRequest(objs: Seq[SparkPrivilegeObject], isInput: Boolean): Unit = {
         objs.foreach { obj =>
           val resource = getSparkResource(obj, opType)
+          LOG.info("***resource***" + resource)
           if (resource != null) {
             val objectName = obj.getObjectName
+            LOG.info("***objectName***" + objectName)
             val objectType = resource.getObjectType
+            LOG.info("***objectType***" + objectType)
             if (objectType == SparkObjectType.URI && isPathInFSScheme(objectName)) {
               val fsAction = getURIAccessType(opType)
               val hadoopConf = spark.sparkContext.hadoopConfiguration
@@ -83,6 +86,7 @@ object RangerSparkAuthorizer {
               }
             } else {
               val accessType = getAccessType(obj, opType, objectType, isInput)
+              LOG.info("***accessType***"+ accessType)
               if (accessType != SparkAccessType.NONE && !requests.exists(
                 o => o.getSparkAccessType == accessType && o.getResource == resource)) {
                 requests += new RangerSparkAccessRequest(resource, user, groups, opType.toString,
@@ -97,6 +101,7 @@ object RangerSparkAuthorizer {
       addAccessRequest(outputs, isInput = false)
       requests.foreach { request =>
         val resource = request.getResource.asInstanceOf[RangerSparkResource]
+        LOG.info("***resource***" + resource)
         if (resource.getObjectType == SparkObjectType.COLUMN &&
           StringUtils.contains(resource.getColumn, ",")) {
           resource.setServiceDef(sparkPlugin.getServiceDef)
@@ -108,6 +113,7 @@ object RangerSparkAuthorizer {
             colReq.setResource(colRes)
             colReq.asInstanceOf[RangerAccessRequest]
           }.toList.asJava
+          LOG.info("***colReqs***" + colReqs)
           val colResults = sparkPlugin.isAccessAllowed(colReqs, auditHandler)
           if (colResults != null) {
             for (c <- colResults.asScala) {
@@ -118,6 +124,7 @@ object RangerSparkAuthorizer {
             }
           }
         } else {
+          LOG.info("***request***" + request)
           val result = sparkPlugin.isAccessAllowed(request, auditHandler)
           if (result != null && !result.getIsAllowed) {
             throw new SparkAccessControlException(s"Permission denied: user [$user] does not" +

@@ -18,7 +18,8 @@
 package org.apache.spark.sql.hive
 
 
-import org.apache.ranger.authorization.spark.authorizer.{SparkPrivilegeObject, SparkPrivilegeObjectType, SparkPrivObjectActionType}
+import org.apache.commons.logging.LogFactory
+import org.apache.ranger.authorization.spark.authorizer.{SparkPrivObjectActionType, SparkPrivilegeObject, SparkPrivilegeObjectType}
 import org.apache.ranger.authorization.spark.authorizer.SparkPrivObjectActionType.SparkPrivObjectActionType
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.catalyst.TableIdentifier
@@ -39,6 +40,7 @@ import scala.collection.mutable.ArrayBuffer
  */
 private[sql] object PrivilegesBuilder {
 
+  private val LOG = LogFactory.getLog(this.getClass.getSimpleName.stripSuffix("$"))
   /**
    * Build input and output privilege objects from a Spark's [[LogicalPlan]]
    *
@@ -54,13 +56,17 @@ private[sql] object PrivilegesBuilder {
 
     def doBuild(plan: LogicalPlan): (Seq[SparkPrivilegeObject], Seq[SparkPrivilegeObject]) = {
       val inputObjs = new ArrayBuffer[SparkPrivilegeObject]
+      LOG.info("***inputObjs***" + inputObjs)
       val outputObjs = new ArrayBuffer[SparkPrivilegeObject]
+      LOG.info("***outputObjs***" + outputObjs)
       plan match {
         // RunnableCommand
         case cmd: Command => buildCommand(cmd, inputObjs, outputObjs)
         // Queries
         case _ => buildQuery(plan, inputObjs)
       }
+      LOG.info("***inputObjs***" + inputObjs)
+      LOG.info("***outputObjs***" + outputObjs)
       (inputObjs, outputObjs)
     }
 
@@ -140,6 +146,7 @@ private[sql] object PrivilegesBuilder {
       case a: AlterDatabasePropertiesCommand => addDbLevelObjs(a.databaseName, outputObjs)
 
       case a if a.nodeName == "AlterTableAddColumnsCommand" =>
+        LOG.info("AlterTableAddColumnsCommand" + "***a***" + a +"  ***a.nodeName***" + a.nodeName)
         addTableOrViewLevelObjs(
           getFieldVal(a, "table").asInstanceOf[TableIdentifier],
           inputObjs,

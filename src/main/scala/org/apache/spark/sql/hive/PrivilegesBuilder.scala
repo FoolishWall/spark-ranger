@@ -277,7 +277,7 @@ private[sql] object PrivilegesBuilder {
       case d: DescribeFunctionCommand =>
         addFunctionLevelObjs(d.functionName.database, d.functionName.funcName, inputObjs)
 
-      case d: DescribeTableCommand => addTableOrViewLevelObjs(d.table, inputObjs)
+      case d: DescribeTableCommand => addDescObjs(d.table, inputObjs)
 
       case d: DropDatabaseCommand =>
         // outputObjs are enough for privilege check, adding inputObjs for consistency with hive
@@ -458,6 +458,18 @@ private[sql] object PrivilegesBuilder {
           actionType)
       case _ =>
     }
+  }
+
+  private def addDescObjs(identifier: TableIdentifier,
+                          privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
+    val tbName = identifier.table
+    privilegeObjects += new SparkPrivilegeObject(
+      SparkPrivilegeObjectType.TABLE_OR_VIEW,
+      null,
+      tbName,
+      null,
+      null,
+      null)
   }
 
   /**

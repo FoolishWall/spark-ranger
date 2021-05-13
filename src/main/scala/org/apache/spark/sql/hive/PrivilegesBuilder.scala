@@ -56,9 +56,7 @@ private[sql] object PrivilegesBuilder {
 
     def doBuild(plan: LogicalPlan): (Seq[SparkPrivilegeObject], Seq[SparkPrivilegeObject]) = {
       val inputObjs = new ArrayBuffer[SparkPrivilegeObject]
-      LOG.info("***inputObjs***" + inputObjs)
       val outputObjs = new ArrayBuffer[SparkPrivilegeObject]
-      LOG.info("***outputObjs***" + outputObjs)
       plan match {
         // RunnableCommand
         case cmd: Command => buildCommand(cmd, inputObjs, outputObjs)
@@ -87,11 +85,13 @@ private[sql] object PrivilegesBuilder {
       privilegeObjects: ArrayBuffer[SparkPrivilegeObject],
       projectionList: Seq[NamedExpression] = Nil): Unit = {
 
+    LOG.info("*** projectionList ***" + projectionList )
     /**
      * Columns in Projection take priority for column level privilege checking
      * @param table catalogTable of a given relation
      */
     def mergeProjection(table: CatalogTable): Unit = {
+      LOG.info("*** CatalogTable: table ***" + table)
       if (projectionList.isEmpty) {
         addTableOrViewLevelObjs(
           table.identifier,
@@ -436,6 +436,15 @@ private[sql] object PrivilegesBuilder {
   private def addTableOrViewLevelObjs(identifier: TableIdentifier,
       privilegeObjects: ArrayBuffer[SparkPrivilegeObject], partKeys: Seq[String] = Nil,
       columns: Seq[String] = Nil, mode: SaveMode = SaveMode.ErrorIfExists): Unit = {
+    LOG.info("*** identifier ***" + identifier)
+    LOG.info("*** privilegeObjects ***" + privilegeObjects)
+    LOG.info("*** partKeys ***" + partKeys)
+    LOG.info("*** columns ***" + columns)
+    LOG.info("*** mode ***" + mode)
+
+    LOG.info("*** identifier.database ***" + identifier.database)
+    LOG.info("*** identifier.table ***" + identifier.table)
+
     identifier.database match {
       case Some(db) =>
         val tbName = identifier.table

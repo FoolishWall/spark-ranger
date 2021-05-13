@@ -57,8 +57,12 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
       case r: RangerShowDatabasesCommand => r
       case _ =>
         LOG.info("***plan***" + plan)
+        //***plan***, example : use db ==> SetDatabaseCommand wall
+        //***plan***, example : select *  ==> HiveTableRelation `wall`.`employee`, org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, [dept_no#12, addr#13, tel#14, app_name#15]
+        //***plan***, example : desc tb  ==> DescribeTableCommand `employee`, false
         val operationType: SparkOperationType = toOperationType(plan)
         LOG.info("***operationType***" + operationType)
+        //***operationType***, example : SWITCHDATABASE or QUERY or DESCTABLE
         val (in, out) = PrivilegesBuilder.build(plan)
         try {
           RangerSparkAuthorizer.checkPrivileges(spark, operationType, in, out)

@@ -71,12 +71,13 @@ object RangerSparkAuthorizer {
       def addAccessRequest(objs: Seq[SparkPrivilegeObject], isInput: Boolean): Unit = {
         objs.foreach { obj =>
           val resource = getSparkResource(obj, opType)
+          //***resource***, example: RangerResourceImpl={ownerUser={null} elements={database=wall; } }
           LOG.info("***resource***" + resource)
+          LOG.info("***obj***" + obj)
+          //***SparkPrivilegeObject***, example: object[type=DATABASE, name=wall]
           if (resource != null) {
             val objectName = obj.getObjectName
-            LOG.info("***objectName***" + objectName)
             val objectType = resource.getObjectType
-            LOG.info("***objectType***" + objectType)
             if (objectType == SparkObjectType.URI && isPathInFSScheme(objectName)) {
               val fsAction = getURIAccessType(opType)
               val hadoopConf = spark.sparkContext.hadoopConfiguration
@@ -101,6 +102,7 @@ object RangerSparkAuthorizer {
       addAccessRequest(outputs, isInput = false)
       requests.foreach { request =>
         val resource = request.getResource.asInstanceOf[RangerSparkResource]
+        LOG.info("***request***" + request)
         LOG.info("***resource***" + resource)
         if (resource.getObjectType == SparkObjectType.COLUMN &&
           StringUtils.contains(resource.getColumn, ",")) {
@@ -125,6 +127,20 @@ object RangerSparkAuthorizer {
           }
         } else {
           LOG.info("***request***" + request)
+          //***request***, example : RangerAccessRequestImpl={
+          // resource={RangerResourceImpl={ownerUser={null} elements={database=wall; } }}
+          // accessType={_any} user={eos}
+          // userGroups={eos scheduler }
+          // accessTime={Thu May 13 08:01:13 UTC 2021}
+          // clientIPAddress={null}
+          // forwardedAddresses={}
+          // remoteIPAddress={null}
+          // clientType={null}
+          // action={SWITCHDATABASE}
+          // requestData={null}
+          // sessionId={null}
+          // resourceMatchingScope={SELF}
+          // clusterName={} context={} }
           val result = sparkPlugin.isAccessAllowed(request, auditHandler)
           if (result != null && !result.getIsAllowed) {
             throw new SparkAccessControlException(s"Permission denied: user [$user] does not" +
@@ -185,8 +201,10 @@ object RangerSparkAuthorizer {
     }
   }
 
+  //获取权限类型
   private def getAccessType(obj: SparkPrivilegeObject, opType: SparkOperationType,
       objectType: SparkObjectType, isInput: Boolean): SparkAccessType = {
+    LOG.info("***ActionType***" + obj.getActionType)
     objectType match {
       case SparkObjectType.URI if isInput => SparkAccessType.READ
       case SparkObjectType.URI => SparkAccessType.WRITE
@@ -225,8 +243,11 @@ object RangerSparkAuthorizer {
     }
   }
 
+  //获取SparkObjectType的类型
   private def getObjectType(
       obj: SparkPrivilegeObject, opType: SparkOperationType): SparkObjectType = {
+    //***SparkPrivilegeObject***, example: object[type=DATABASE, name=wall]
+    //***SparkPrivilegeObject***, example: Object [type=TABLE_OR_VIEW, name=wall.employee[]]
     obj.getType match {
       case SparkPrivilegeObjectType.DATABASE | null => SparkObjectType.DATABASE
       case SparkPrivilegeObjectType.TABLE_OR_VIEW if !StringUtil.isEmpty(obj.getColumns.asJava) =>
@@ -240,9 +261,11 @@ object RangerSparkAuthorizer {
     }
   }
 
+  //获取初始化的RangerSparkResource
   private def getSparkResource(
       obj: SparkPrivilegeObject, opType: SparkOperationType): RangerSparkResource = {
     import SparkObjectType._
+    //***objectType***, example: NONE, DATABASE, TABLE, VIEW, COLUMN, FUNCTION, URI
     val objectType = getObjectType(obj, opType)
     val resource = objectType match {
       case DATABASE => RangerSparkResource(objectType, Option(obj.getDbname))

@@ -24,7 +24,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{Command, LogicalPlan}
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.execution.command._
 import org.apache.spark.sql.execution.datasources.{CreateTempViewUsing, InsertIntoDataSourceCommand, InsertIntoHadoopFsRelationCommand}
-import org.apache.spark.sql.execution.{RangerDescribeTableCommand, RangerShowDatabasesCommand, RangerShowTablesCommand, RangerSparkPlanOmitStrategy}
+import org.apache.spark.sql.execution.{RangerShowDatabasesCommand, RangerShowTablesCommand, RangerSparkPlanOmitStrategy}
 import org.apache.spark.sql.hive.PrivilegesBuilder
 import org.apache.spark.sql.hive.execution.CreateHiveTableAsSelectCommand
 
@@ -34,6 +34,7 @@ import org.apache.spark.sql.hive.execution.CreateHiveTableAsSelectCommand
  * For Apache Spark 2.2.x and later
  */
 case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[LogicalPlan] {
+
   import SparkOperationType._
 
   private val LOG = LogFactory.getLog(classOf[RangerSparkAuthorizerExtension])
@@ -43,26 +44,19 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
    *
    * If the user is authorized, then the original plan will be returned; otherwise, interrupted by
    * some particular privilege exceptions.
+   *
    * @param plan a spark LogicalPlan for verifying privileges
    * @return a plan itself which has gone through the privilege check.
    */
   override def apply(plan: LogicalPlan): LogicalPlan = {
     plan match {
-      case s: ShowTablesCommand =>
-        LOG.info("*** ShowTablesCommand plan***" + plan)
-        RangerShowTablesCommand(s)
-      case s: ShowDatabasesCommand =>
-        LOG.info("*** ShowDatabasesCommand plan***" + plan)
-        RangerShowDatabasesCommand(s)
-      case d: DescribeTableCommand =>
-        LOG.info("*** DescribeTableCommand plan***" + plan)
-        RangerDescribeTableCommand(d)
-      case s @ SetCommand(Some(("spark.sql.optimizer.excludedRules", Some(exclusions)))) =>
+      case s: ShowTablesCommand => RangerShowTablesCommand(s)
+      case s: ShowDatabasesCommand => RangerShowDatabasesCommand(s)
+      case s@SetCommand(Some(("spark.sql.optimizer.excludedRules", Some(exclusions)))) =>
         authorizeSetCommandExcludedRules(exclusions)
         s
       case r: RangerShowTablesCommand => r
       case r: RangerShowDatabasesCommand => r
-      case r: RangerDescribeTableCommand => r
       case _ =>
         LOG.info("***plan***" + plan)
         //***plan***, example : use db ==> SetDatabaseCommand wall
@@ -93,31 +87,32 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
   }
 
   private def authorizeSetCommandExcludedRules(exclusions: String) = {
-      if (containsRangerExtension(exclusions)) {
-        val ace = new SparkAccessControlException("Ranger extensions are not allowed to be excluded")
-        LOG.error(
-          s"""
-             |+===============================+
-             ||Spark SQL Authorization Failure|
-             ||-------------------------------|
-             ||${ace.getMessage}
-             ||-------------------------------|
-             ||Spark SQL Authorization Failure|
-             |+===============================+
+    if (containsRangerExtension(exclusions)) {
+      val ace = new SparkAccessControlException("Ranger extensions are not allowed to be excluded")
+      LOG.error(
+        s"""
+           |+===============================+
+           ||Spark SQL Authorization Failure|
+           ||-------------------------------|
+           ||${ace.getMessage}
+           ||-------------------------------|
+           ||Spark SQL Authorization Failure|
+           |+===============================+
              """.stripMargin)
-        throw ace
-      }
+      throw ace
+    }
   }
 
   private def containsRangerExtension(excluded: String) = {
     excluded.contains(classOf[RangerSparkAuthorizerExtension].getName) ||
-        excluded.contains(classOf[RangerSparkRowFilterExtension].getName) ||
-        excluded.contains(classOf[RangerSparkMaskingExtension].getName) ||
-        excluded.contains(classOf[RangerSparkPlanOmitStrategy].getName)
+      excluded.contains(classOf[RangerSparkRowFilterExtension].getName) ||
+      excluded.contains(classOf[RangerSparkMaskingExtension].getName) ||
+      excluded.contains(classOf[RangerSparkPlanOmitStrategy].getName)
   }
 
   /**
    * Mapping of [[LogicalPlan]] -> [[SparkOperationType]]
+   *
    * @param plan a spark LogicalPlan
    * @return
    */

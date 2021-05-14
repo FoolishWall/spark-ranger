@@ -48,8 +48,12 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
    */
   override def apply(plan: LogicalPlan): LogicalPlan = {
     plan match {
-      case s: ShowTablesCommand => RangerShowTablesCommand(s)
-      case s: ShowDatabasesCommand => RangerShowDatabasesCommand(s)
+      case s: ShowTablesCommand =>
+        LOG.info("*** ShowTablesCommand plan***" + plan)
+        RangerShowTablesCommand(s)
+      case s: ShowDatabasesCommand =>
+        LOG.info("*** ShowDatabasesCommand plan***" + plan)
+        RangerShowDatabasesCommand(s)
       case s @ SetCommand(Some(("spark.sql.optimizer.excludedRules", Some(exclusions)))) =>
         authorizeSetCommandExcludedRules(exclusions)
         s

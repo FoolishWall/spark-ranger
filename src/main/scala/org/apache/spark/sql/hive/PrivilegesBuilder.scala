@@ -283,9 +283,10 @@ private[sql] object PrivilegesBuilder {
         addFunctionLevelObjs(d.functionName.database, d.functionName.funcName, inputObjs)
 
       case d: DescribeTableCommand =>
-        val catalogTable = getFieldVal(d, "tableMeta").asInstanceOf[CatalogTable]
-        LOG.info("*** DescribeTableCommand catalogTable ***" + catalogTable)
-        addTableOrViewLevelObjs(catalogTable.identifier, inputObjs)
+        LOG.info("*** DescribeTableCommand output ***" + d.output)
+        LOG.info("*** DescribeTableCommand schema ***" + d.schema)
+        LOG.info("*** DescribeTableCommand toJSON ***" + d.toJSON)
+        addTableOrViewLevelObjs(d.table, inputObjs)
 
       case d: DropDatabaseCommand =>
         // outputObjs are enough for privilege check, adding inputObjs for consistency with hive

@@ -24,7 +24,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{Command, LogicalPlan}
 import org.apache.spark.sql.catalyst.rules.Rule
 import org.apache.spark.sql.execution.command._
 import org.apache.spark.sql.execution.datasources.{CreateTempViewUsing, InsertIntoDataSourceCommand, InsertIntoHadoopFsRelationCommand}
-import org.apache.spark.sql.execution.{RangerShowDatabasesCommand, RangerShowTablesCommand, RangerSparkPlanOmitStrategy}
+import org.apache.spark.sql.execution.{RangerDescribeTableCommand, RangerShowDatabasesCommand, RangerShowTablesCommand, RangerSparkPlanOmitStrategy}
 import org.apache.spark.sql.hive.PrivilegesBuilder
 import org.apache.spark.sql.hive.execution.CreateHiveTableAsSelectCommand
 
@@ -54,11 +54,15 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
       case s: ShowDatabasesCommand =>
         LOG.info("*** ShowDatabasesCommand plan***" + plan)
         RangerShowDatabasesCommand(s)
+      case d: DescribeTableCommand =>
+        LOG.info("*** DescribeTableCommand plan***" + plan)
+        RangerDescribeTableCommand(d)
       case s @ SetCommand(Some(("spark.sql.optimizer.excludedRules", Some(exclusions)))) =>
         authorizeSetCommandExcludedRules(exclusions)
         s
       case r: RangerShowTablesCommand => r
       case r: RangerShowDatabasesCommand => r
+      case r: RangerDescribeTableCommand => r
       case _ =>
         LOG.info("***plan***" + plan)
         //***plan***, example : use db ==> SetDatabaseCommand wall

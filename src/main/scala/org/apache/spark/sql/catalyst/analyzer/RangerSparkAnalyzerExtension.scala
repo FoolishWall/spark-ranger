@@ -20,7 +20,8 @@ case class RangerSparkAnalyzerExtension(spark: SparkSession) extends Rule[Logica
     plan match {
       case s: DescribeTableCommand =>
         LOG.info("*** analyzer plan database ***" + s.table.database)
-        null
+        plan
+      case _ => plan
     }
   }
 }

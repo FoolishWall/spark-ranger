@@ -283,9 +283,7 @@ private[sql] object PrivilegesBuilder {
         addFunctionLevelObjs(d.functionName.database, d.functionName.funcName, inputObjs)
 
       case d: DescribeTableCommand =>
-        LOG.info("*** DescribeTableCommand output ***" + d.output)
-        LOG.info("*** DescribeTableCommand schema ***" + d.schema)
-        LOG.info("*** DescribeTableCommand toJSON ***" + d.toJSON)
+        LOG.info("*** DescribeTableCommand schema ***" + d.schema.fields.mkString("Array(", ", ", ")"))
         addTableOrViewLevelObjs(d.table, inputObjs)
 
       case d: DropDatabaseCommand =>

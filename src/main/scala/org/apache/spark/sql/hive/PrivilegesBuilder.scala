@@ -164,52 +164,53 @@ private[sql] object PrivilegesBuilder {
           columns = getFieldVal(a, "colsToAdd").asInstanceOf[Seq[StructField]].map(_.name))
 
       case a: AlterTableAddPartitionCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a if a.nodeName == "AlterTableChangeColumnCommand" =>
+        val tableIdentifier = getFieldVal(a, "table").asInstanceOf[TableIdentifier]
         addTableOrViewLevelObjs(
-          getFieldVal(a, "tableName").asInstanceOf[TableIdentifier],
+          tableIdentifier.copy(tableIdentifier.table, Some(spark.catalog.currentDatabase)),
           inputObjs,
           columns = Seq(getFieldVal(a, "columnName").asInstanceOf[String]))
 
       case a: AlterTableDropPartitionCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableRecoverPartitionsCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableRenameCommand if !a.isView || a.oldName.database.nonEmpty =>
         // rename tables / permanent views
-        addTableOrViewLevelObjs(a.oldName, inputObjs)
-        addTableOrViewLevelObjs(a.newName, outputObjs)
+        addTableOrViewLevelObjs(a.oldName.copy(a.oldName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.newName.copy(a.newName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableRenamePartitionCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableSerDePropertiesCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableSetLocationCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableSetPropertiesCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterTableUnsetPropertiesCommand =>
-        addTableOrViewLevelObjs(a.tableName, inputObjs)
-        addTableOrViewLevelObjs(a.tableName, outputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), inputObjs)
+        addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a: AlterViewAsCommand =>
         if (a.name.database.nonEmpty) {
           // it's a permanent view
-          addTableOrViewLevelObjs(a.name, outputObjs)
+          addTableOrViewLevelObjs(a.name.copy(a.name.table, Some(spark.catalog.currentDatabase)), outputObjs)
         }
         buildQuery(a.query, inputObjs)
 

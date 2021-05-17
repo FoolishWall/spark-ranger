@@ -330,7 +330,7 @@ private[sql] object PrivilegesBuilder {
 
       case i if i.nodeName == "InsertIntoHiveTable" =>
         addTableOrViewLevelObjs(
-          getFieldVal(i, "table").asInstanceOf[CatalogTable].identifier, outputObjs)
+          getFieldVal(i, "table").asInstanceOf[CatalogTable].identifier, outputObjs, mode = SaveMode.Append)
         buildQuery(getFieldVal(i, "query").asInstanceOf[LogicalPlan], inputObjs)
 
       case l: LoadDataCommand =>

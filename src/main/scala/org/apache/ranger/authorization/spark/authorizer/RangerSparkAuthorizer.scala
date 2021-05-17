@@ -220,7 +220,7 @@ object RangerSparkAuthorizer {
               if (isInput) SparkAccessType.SELECT else SparkAccessType.CREATE
             case ALTERDATABASE | ALTERTABLE_ADDCOLS |
                  ALTERTABLE_ADDPARTS | ALTERTABLE_DROPPARTS |
-                 ALTERTABLE_LOCATION | ALTERTABLE_PROPERTIES | ALTERTABLE_SERDEPROPERTIES |
+                 ALTERTABLE_LOCATION | ALTERTABLE_PROPERTIES | ALTERTABLE_SERDEPROPERTIES | ALTERTABLE_RENAME |
                  ALTERVIEW_RENAME | MSCK => SparkAccessType.ALTER
             case DROPFUNCTION | DROPTABLE | DROPVIEW | DROPDATABASE =>
               SparkAccessType.DROP

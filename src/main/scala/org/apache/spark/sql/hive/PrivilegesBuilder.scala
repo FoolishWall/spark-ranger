@@ -168,7 +168,7 @@ private[sql] object PrivilegesBuilder {
         addTableOrViewLevelObjs(a.tableName.copy(a.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case a if a.nodeName == "AlterTableChangeColumnCommand" =>
-        val tableIdentifier = getFieldVal(a, "table").asInstanceOf[TableIdentifier]
+        val tableIdentifier = getFieldVal(a, "tableName").asInstanceOf[TableIdentifier]
         addTableOrViewLevelObjs(
           tableIdentifier.copy(tableIdentifier.table, Some(spark.catalog.currentDatabase)),
           inputObjs,

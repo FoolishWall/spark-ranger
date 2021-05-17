@@ -66,7 +66,7 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
         val operationType: SparkOperationType = toOperationType(plan)
         LOG.info("***operationType***" + operationType)
         //***operationType***, example : SWITCHDATABASE or QUERY or DESCTABLE
-        val (in, out) = PrivilegesBuilder.build(plan)
+        val (in, out) = PrivilegesBuilder.build(plan, spark)
         try {
           RangerSparkAuthorizer.checkPrivileges(spark, operationType, in, out)
           plan

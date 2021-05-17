@@ -21,7 +21,7 @@ package org.apache.spark.sql.hive
 import org.apache.commons.logging.LogFactory
 import org.apache.ranger.authorization.spark.authorizer.{SparkPrivObjectActionType, SparkPrivilegeObject, SparkPrivilegeObjectType}
 import org.apache.ranger.authorization.spark.authorizer.SparkPrivObjectActionType.SparkPrivObjectActionType
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 import org.apache.spark.sql.catalyst.catalog.CatalogTable
@@ -53,14 +53,14 @@ private[sql] object PrivilegesBuilder {
    *
    * @param plan A Spark [[LogicalPlan]]
    */
-  def build(plan: LogicalPlan): (Seq[SparkPrivilegeObject], Seq[SparkPrivilegeObject]) = {
+  def build(plan: LogicalPlan, spark: SparkSession): (Seq[SparkPrivilegeObject], Seq[SparkPrivilegeObject]) = {
 
-    def doBuild(plan: LogicalPlan): (Seq[SparkPrivilegeObject], Seq[SparkPrivilegeObject]) = {
+    def doBuild(plan: LogicalPlan, spark: SparkSession): (Seq[SparkPrivilegeObject], Seq[SparkPrivilegeObject]) = {
       val inputObjs = new ArrayBuffer[SparkPrivilegeObject]
       val outputObjs = new ArrayBuffer[SparkPrivilegeObject]
       plan match {
         // RunnableCommand
-        case cmd: Command => buildCommand(cmd, inputObjs, outputObjs)
+        case cmd: Command => buildCommand(cmd, inputObjs, outputObjs, spark)
         // Queries
         case _ => buildQuery(plan, inputObjs)
       }
@@ -70,8 +70,8 @@ private[sql] object PrivilegesBuilder {
     }
 
     plan match {
-      case e: ExplainCommand => doBuild(e.logicalPlan)
-      case p => doBuild(p)
+      case e: ExplainCommand => doBuild(e.logicalPlan, spark)
+      case p => doBuild(p, spark)
     }
   }
 
@@ -83,9 +83,9 @@ private[sql] object PrivilegesBuilder {
    * @param projectionList   Projection list after pruning
    */
   private def buildQuery(
-                          plan: LogicalPlan,
-                          privilegeObjects: ArrayBuffer[SparkPrivilegeObject],
-                          projectionList: Seq[NamedExpression] = Nil): Unit = {
+                            plan: LogicalPlan,
+                            privilegeObjects: ArrayBuffer[SparkPrivilegeObject],
+                            projectionList: Seq[NamedExpression] = Nil): Unit = {
 
     LOG.info("*** projectionList ***" + projectionList)
 
@@ -144,9 +144,10 @@ private[sql] object PrivilegesBuilder {
    * @param outputObjs output spark privilege object list
    */
   private def buildCommand(
-                            plan: LogicalPlan,
-                            inputObjs: ArrayBuffer[SparkPrivilegeObject],
-                            outputObjs: ArrayBuffer[SparkPrivilegeObject]): Unit = {
+                              plan: LogicalPlan,
+                              inputObjs: ArrayBuffer[SparkPrivilegeObject],
+                              outputObjs: ArrayBuffer[SparkPrivilegeObject],
+                              spark: SparkSession): Unit = {
     plan match {
       case a: AlterDatabasePropertiesCommand => addDbLevelObjs(a.databaseName, outputObjs)
 
@@ -283,8 +284,7 @@ private[sql] object PrivilegesBuilder {
         addFunctionLevelObjs(d.functionName.database, d.functionName.funcName, inputObjs)
 
       case d: DescribeTableCommand =>
-        LOG.info("*** DescribeTableCommand schema ***" + d.schema.fields.mkString("Array(", ", ", ")"))
-        addTableOrViewLevelObjs(d.table, inputObjs)
+        addTableOrViewLevelObjs(d.table.copy(d.table.table, Some(spark.catalog.currentDatabase)), inputObjs)
 
       case d: DropDatabaseCommand =>
         // outputObjs are enough for privilege check, adding inputObjs for consistency with hive
@@ -381,8 +381,8 @@ private[sql] object PrivilegesBuilder {
    * @param privilegeObjects input or output list
    */
   private def addDbLevelObjs(
-                              dbName: String,
-                              privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
+                                dbName: String,
+                                privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
     privilegeObjects += new SparkPrivilegeObject(SparkPrivilegeObjectType.DATABASE, dbName, dbName)
   }
 
@@ -393,8 +393,8 @@ private[sql] object PrivilegesBuilder {
    * @param privilegeObjects input or output spark privilege object list
    */
   private def addDbLevelObjs(
-                              dbOption: Option[String],
-                              privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
+                                dbOption: Option[String],
+                                privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
     dbOption match {
       case Some(db) =>
         privilegeObjects += new SparkPrivilegeObject(SparkPrivilegeObjectType.DATABASE, db, db)
@@ -409,8 +409,8 @@ private[sql] object PrivilegesBuilder {
    * @param privilegeObjects input or output spark privilege object list
    */
   private def addDbLevelObjs(
-                              identifier: TableIdentifier,
-                              privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
+                                identifier: TableIdentifier,
+                                privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
     identifier.database match {
       case Some(db) =>
         privilegeObjects += new SparkPrivilegeObject(SparkPrivilegeObjectType.DATABASE, db, db)
@@ -426,9 +426,9 @@ private[sql] object PrivilegesBuilder {
    * @param privilegeObjects input or output list
    */
   private def addFunctionLevelObjs(
-                                    databaseName: Option[String],
-                                    functionName: String,
-                                    privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
+                                      databaseName: Option[String],
+                                      functionName: String,
+                                      privilegeObjects: ArrayBuffer[SparkPrivilegeObject]): Unit = {
     databaseName match {
       case Some(db) =>
         privilegeObjects += new SparkPrivilegeObject(

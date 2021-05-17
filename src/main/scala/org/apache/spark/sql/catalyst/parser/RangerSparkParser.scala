@@ -18,19 +18,9 @@ case class RangerSparkParser(parser: ParserInterface) extends ParserInterface {
    * Parse a string to a [[LogicalPlan]].
    */
   override def parsePlan(sqlText: String): LogicalPlan = {
+    LOG.info("***parser sqlText ***" + sqlText)
     val logicalPlan = parser.parsePlan(sqlText)
     LOG.info("***parser logicalPlan ***" + logicalPlan)
-    logicalPlan transform {
-      case project @ Project(projectList, _) =>
-        projectList.foreach {
-          name =>
-            if (name.isInstanceOf[UnresolvedStar]) {
-              throw new RuntimeException("You must specify your project column set," +
-                  " * is not allowed.")
-            }
-        }
-        project
-    }
     logicalPlan
   }
 

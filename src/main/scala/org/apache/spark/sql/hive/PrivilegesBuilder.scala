@@ -152,13 +152,14 @@ private[sql] object PrivilegesBuilder {
       case a: AlterDatabasePropertiesCommand => addDbLevelObjs(a.databaseName, outputObjs)
 
       case a if a.nodeName == "AlterTableAddColumnsCommand" =>
-        LOG.info("AlterTableAddColumnsCommand" + "***a***" + a + "  ***a.nodeName***" + a.nodeName)
+        //add database info
+        val tableIdentifier = getFieldVal(a, "table").asInstanceOf[TableIdentifier]
         addTableOrViewLevelObjs(
-          getFieldVal(a, "table").asInstanceOf[TableIdentifier],
+          tableIdentifier.copy(tableIdentifier.table, Some(spark.catalog.currentDatabase)),
           inputObjs,
           columns = getFieldVal(a, "colsToAdd").asInstanceOf[Seq[StructField]].map(_.name))
         addTableOrViewLevelObjs(
-          getFieldVal(a, "table").asInstanceOf[TableIdentifier],
+          tableIdentifier.copy(tableIdentifier.table, Some(spark.catalog.currentDatabase)),
           outputObjs,
           columns = getFieldVal(a, "colsToAdd").asInstanceOf[Seq[StructField]].map(_.name))
 
@@ -448,12 +449,6 @@ private[sql] object PrivilegesBuilder {
   private def addTableOrViewLevelObjs(identifier: TableIdentifier,
                                       privilegeObjects: ArrayBuffer[SparkPrivilegeObject], partKeys: Seq[String] = Nil,
                                       columns: Seq[String] = Nil, mode: SaveMode = SaveMode.ErrorIfExists): Unit = {
-    LOG.info("*** identifier ***" + identifier)
-    LOG.info("*** privilegeObjects ***" + privilegeObjects)
-    LOG.info("*** partKeys ***" + partKeys)
-    LOG.info("*** columns ***" + columns)
-    LOG.info("*** mode ***" + mode)
-
     LOG.info("*** identifier.database ***" + identifier.database)
     LOG.info("*** identifier.table ***" + identifier.table)
 

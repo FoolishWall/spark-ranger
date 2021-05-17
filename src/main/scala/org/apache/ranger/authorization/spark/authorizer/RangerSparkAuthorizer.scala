@@ -73,7 +73,6 @@ object RangerSparkAuthorizer {
           val resource = getSparkResource(obj, opType)
           //***resource***, example: RangerResourceImpl={ownerUser={null} elements={database=wall; } }
           LOG.info("***resource***" + resource)
-          LOG.info("***obj***" + obj)
           //***SparkPrivilegeObject***, example: object[type=DATABASE, name=wall]
           if (resource != null) {
             val objectName = obj.getObjectName
@@ -102,8 +101,6 @@ object RangerSparkAuthorizer {
       addAccessRequest(outputs, isInput = false)
       requests.foreach { request =>
         val resource = request.getResource.asInstanceOf[RangerSparkResource]
-        LOG.info("***request***" + request)
-        LOG.info("***resource***" + resource)
         if (resource.getObjectType == SparkObjectType.COLUMN &&
           StringUtils.contains(resource.getColumn, ",")) {
           resource.setServiceDef(sparkPlugin.getServiceDef)

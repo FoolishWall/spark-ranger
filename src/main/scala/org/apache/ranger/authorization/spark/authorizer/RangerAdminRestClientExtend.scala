@@ -7,6 +7,7 @@ import org.apache.ranger.admin.client.datatype.RESTResponse
 import org.apache.ranger.authorization.hadoop.config.RangerConfiguration
 import org.apache.ranger.authorization.utils.StringUtil
 import org.apache.ranger.plugin.util.{RangerRESTClient, RangerRESTUtils, RangerServiceNotFoundException, ServicePolicies}
+import sun.misc.BASE64Encoder
 
 /**
  * @author qiang.bi
@@ -56,11 +57,14 @@ class RangerAdminRestClientExtend extends RangerAdminRESTClient {
     LOG.info("***PluginId***" + this.pluginId)
     LOG.info("***ClusterName***" + this.clusterName)
 
-    val webResource = this.restClient.getResource("/service/plugins/policies/download/" + this.serviceName)
+    val webResource = this.restClient.getResource("/service/plugins/secure/policies/download/" + this.serviceName)
         .queryParam("lastKnownVersion", lastKnownVersion.toString)
         .queryParam("lastActivationTime", lastActivationTimeInMillis.toString)
         .queryParam("pluginId", this.pluginId).queryParam("clusterName", this.clusterName)
-
+    val input = "admin" + ":" + "8JJFgzTV"
+    val base = new BASE64Encoder
+    val encodedPassword = base.encode(input.getBytes("UTF-8"))
+    webResource.setProperty("Authorization", "Basic " + encodedPassword)
     val response = webResource.accept("application/json").get(classOf[ClientResponse])
 
     LOG.info("*** response ***" + response)
@@ -84,7 +88,7 @@ class RangerAdminRestClientExtend extends RangerAdminRESTClient {
       }
       else {
         resp = RESTResponse.fromClientResponse(response)
-        LOG.warn("Error getting policies. " + ", response=" + resp + ", serviceName=" + this.serviceName)
+        LOG.warn("Error getting policies. " + "response=" + resp + ", serviceName=" + this.serviceName)
         ret = null
       }
     else {
@@ -92,7 +96,7 @@ class RangerAdminRestClientExtend extends RangerAdminRESTClient {
         LOG.error("Error getting policies; Received NULL response!! " + ", serviceName=" + this.serviceName)
       else {
         resp = RESTResponse.fromClientResponse(response)
-        LOG.debug("No change in policies. " + ", response=" + resp + ", serviceName=" + this.serviceName)
+        LOG.warn("No change in policies. " + ", response=" + resp + ", serviceName=" + this.serviceName)
       }
       ret = null
     }

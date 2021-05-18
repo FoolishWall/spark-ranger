@@ -65,8 +65,8 @@ class RangerAdminRestClientExtend extends RangerAdminRESTClient {
 
     LOG.info("*** response ***" + response)
 
-    var ret = ServicePolicies
-    var resp = RESTResponse
+    var ret = new ServicePolicies
+    var resp = new RESTResponse
     if (response != null && response.getStatus != 304)
       if (response.getStatus == 200) {
         ret = response.getEntity(classOf[ServicePolicies])

@@ -29,7 +29,7 @@
     <!--重写拉取策略的实现类-->
 	<property>
         <name>ranger.plugin.spark.policy.source.impl</name>
-        <value>org.apache.ranger.services.spark.RangerAdminClientImpl</value>
+        <value>org.apache.ranger.authorization.spark.authorizer.RangerAdminRestClientExtend</value>
         <description>
             Policy source.
         </description>

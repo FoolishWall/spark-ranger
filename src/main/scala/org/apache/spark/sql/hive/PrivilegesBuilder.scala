@@ -127,7 +127,7 @@ private[sql] object PrivilegesBuilder {
         // Unfortunately, the real world is always a place where miracles happen.
         // We check the privileges directly without resolving the plan and leave everything
         // to spark to do.
-        LOG.info("*** u.tableIdentifier.database ***" + u.tableIdentifier.database + "; *** u.tableIdentifier.table ***" + u.tableIdentifier.table)
+        //TODO(): database info miss
         addTableOrViewLevelObjs(u.tableIdentifier, privilegeObjects)
 
       case p =>
@@ -272,7 +272,6 @@ private[sql] object PrivilegesBuilder {
             addTableOrViewLevelObjs(c.name.copy(c.name.table, Some(spark.catalog.currentDatabase)), outputObjs)
           case _ =>
         }
-        LOG.info("*** CreateViewCommand child ***" + c.child)
         buildQuery(c.child, inputObjs)
 
       case d if d.nodeName == "DescribeColumnCommand" =>
@@ -299,7 +298,7 @@ private[sql] object PrivilegesBuilder {
       case d: DropFunctionCommand =>
         addFunctionLevelObjs(d.databaseName, d.functionName, outputObjs)
 
-      case d: DropTableCommand => addTableOrViewLevelObjs(d.tableName, outputObjs)
+      case d: DropTableCommand => addTableOrViewLevelObjs(d.tableName.copy(d.tableName.table, Some(spark.catalog.currentDatabase)), outputObjs)
 
       case i: InsertIntoDataSourceCommand =>
         i.logicalRelation.catalogTable.foreach { table =>

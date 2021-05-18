@@ -127,6 +127,7 @@ private[sql] object PrivilegesBuilder {
         // Unfortunately, the real world is always a place where miracles happen.
         // We check the privileges directly without resolving the plan and leave everything
         // to spark to do.
+        LOG.info("*** u.tableIdentifier.database ***" + u.tableIdentifier.database + "; *** u.tableIdentifier.table ***" + u.tableIdentifier.table)
         addTableOrViewLevelObjs(u.tableIdentifier, privilegeObjects)
 
       case p =>
@@ -267,10 +268,11 @@ private[sql] object PrivilegesBuilder {
         c.viewType match {
           case PersistedView =>
             // PersistedView will be tied to a database
-            addDbLevelObjs(c.name, outputObjs)
-            addTableOrViewLevelObjs(c.name, outputObjs)
+            addDbLevelObjs(c.name.copy(c.name.table, Some(spark.catalog.currentDatabase)), outputObjs)
+            addTableOrViewLevelObjs(c.name.copy(c.name.table, Some(spark.catalog.currentDatabase)), outputObjs)
           case _ =>
         }
+        LOG.info("*** CreateViewCommand child ***" + c.child)
         buildQuery(c.child, inputObjs)
 
       case d if d.nodeName == "DescribeColumnCommand" =>

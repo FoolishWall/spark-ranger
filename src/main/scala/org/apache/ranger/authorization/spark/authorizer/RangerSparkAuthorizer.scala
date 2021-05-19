@@ -186,9 +186,7 @@ object RangerSparkAuthorizer {
 
   def createSparkResource(privilegeObject: SparkPrivilegeObject): Option[RangerSparkResource] = {
     val objectName = privilegeObject.getObjectName
-    LOG.info("*** objectName ***" + objectName)
     val dbName = privilegeObject.getDbname
-    LOG.info("*** dbName ***" + objectName)
     val objectType = privilegeObject.getType
     objectType match {
       case SparkPrivilegeObjectType.DATABASE =>

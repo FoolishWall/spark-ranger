@@ -7,6 +7,7 @@ import org.apache.ranger.admin.client.datatype.RESTResponse
 import org.apache.ranger.authorization.hadoop.config.RangerConfiguration
 import org.apache.ranger.authorization.utils.StringUtil
 import org.apache.ranger.plugin.util.{RangerRESTClient, RangerRESTUtils, RangerServiceNotFoundException, ServicePolicies}
+import sun.misc.BASE64Encoder
 
 /**
  * @author qiang.bi
@@ -56,11 +57,16 @@ class RangerAdminRestClientExtend extends RangerAdminRESTClient {
     LOG.info("***PluginId***" + this.pluginId)
     LOG.info("***ClusterName***" + this.clusterName)
 
+    val name = "admin"
+    val password = "8JJFgzTV"
+    val authString = name + ":" + password
+    val authStringEnc = new BASE64Encoder().encode(authString.getBytes)
+
     val webResource = this.restClient.getResource("/service/plugins/secure/policies/download/" + this.serviceName)
         .queryParam("lastKnownVersion", lastKnownVersion.toString)
         .queryParam("lastActivationTime", lastActivationTimeInMillis.toString)
         .queryParam("pluginId", this.pluginId).queryParam("clusterName", this.clusterName)
-    val response = webResource.accept("application/json").get(classOf[ClientResponse])
+    val response = webResource.accept("application/json").header("Authorization", "Basic " + authStringEnc).get(classOf[ClientResponse])
 
     LOG.info("*** response ***" + response)
 

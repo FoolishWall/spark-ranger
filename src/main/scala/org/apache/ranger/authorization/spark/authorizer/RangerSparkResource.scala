@@ -78,7 +78,6 @@ object RangerSparkResource {
 
   def apply(objectType: SparkObjectType, databaseOrUrl: Option[String],
             tableOrUdf: String): RangerSparkResource = {
-    LOG.info("*** tableOrUdf ***" + tableOrUdf)
     new RangerSparkResource(objectType, databaseOrUrl, tableOrUdf)
   }
 

@@ -31,14 +31,12 @@ case class RangerShowTablesCommand(child: ShowTablesCommand) extends RunnableCom
 
   override def run(sparkSession: SparkSession): Seq[Row] = {
     val rows = child.run(sparkSession)
-    LOG.info("*** RangerShowTablesCommand rows ***" + rows)
     rows.filter(r => RangerSparkAuthorizer.isAllowed(toSparkPrivilegeObject(r)))
   }
 
   private def toSparkPrivilegeObject(row: Row): SparkPrivilegeObject = {
     val database = row.getString(0)
     val table = row.getString(1)
-    LOG.info("*** table ***" + table)
     new SparkPrivilegeObject(SparkPrivilegeObjectType.TABLE_OR_VIEW, database, table)
   }
 }

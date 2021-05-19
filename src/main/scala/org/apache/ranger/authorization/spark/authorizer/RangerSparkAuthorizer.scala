@@ -155,10 +155,8 @@ object RangerSparkAuthorizer {
     val ugi = currentUser
     val user = ugi.getShortUserName
     val groups = ugi.getGroupNames.toSet
-    LOG.info("*** obj ***" + obj)
     createSparkResource(obj) match {
       case Some(resource) =>
-        LOG.info("*** resource ***" + resource)
         val request =
           new RangerSparkAccessRequest(resource, user, groups, sparkPlugin.getClusterName)
         LOG.info("*** request ***" + request)
@@ -188,13 +186,15 @@ object RangerSparkAuthorizer {
 
   def createSparkResource(privilegeObject: SparkPrivilegeObject): Option[RangerSparkResource] = {
     val objectName = privilegeObject.getObjectName
+    LOG.info("*** objectName ***" + objectName)
     val dbName = privilegeObject.getDbname
+    LOG.info("*** dbName ***" + objectName)
     val objectType = privilegeObject.getType
     objectType match {
       case SparkPrivilegeObjectType.DATABASE =>
-        Some(RangerSparkResource(SparkObjectType.DATABASE, Option(objectName)))
+        Some(RangerSparkResource(SparkObjectType.DATABASE, Option(dbName)))
       case SparkPrivilegeObjectType.TABLE_OR_VIEW =>
-        Some(RangerSparkResource(SparkObjectType.DATABASE, Option(dbName), objectName))
+        Some(RangerSparkResource(SparkObjectType.TABLE, Option(dbName), objectName))
       case _ =>
         LOG.warn(s"RangerSparkAuthorizer.createSparkResource: unexpected objectType: $objectType")
         None

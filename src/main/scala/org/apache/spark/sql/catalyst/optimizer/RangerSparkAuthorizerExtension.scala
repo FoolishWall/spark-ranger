@@ -50,9 +50,9 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
    */
   override def apply(plan: LogicalPlan): LogicalPlan = {
     LOG.info("*** spark.catalog.currentDatabase ***" + spark.catalog.currentDatabase)
+    LOG.info("***plan***" + plan)
     plan match {
       case s: ShowTablesCommand =>
-        LOG.info("*** ShowTablesCommand database ***" + spark.catalog.currentDatabase)
         LOG.info("*** ShowTablesCommand plan ***" + plan)
         RangerShowTablesCommand(s)
       case s: ShowDatabasesCommand => RangerShowDatabasesCommand(s)

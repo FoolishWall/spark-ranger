@@ -159,7 +159,9 @@ object RangerSparkAuthorizer {
       case Some(resource) =>
         val request =
           new RangerSparkAccessRequest(resource, user, groups, sparkPlugin.getClusterName)
+        LOG.info("*** request ***" + request)
         val result = sparkPlugin.isAccessAllowed(request)
+        LOG.info("*** result ***" + result)
         if (request == null) {
           LOG.error("Internal error: null RangerAccessResult received back from isAccessAllowed")
           false

@@ -155,13 +155,14 @@ object RangerSparkAuthorizer {
     val ugi = currentUser
     val user = ugi.getShortUserName
     val groups = ugi.getGroupNames.toSet
+    LOG.info("*** obj ***" + obj)
     createSparkResource(obj) match {
       case Some(resource) =>
+        LOG.info("*** resource ***" + resource)
         val request =
           new RangerSparkAccessRequest(resource, user, groups, sparkPlugin.getClusterName)
         LOG.info("*** request ***" + request)
         val result = sparkPlugin.isAccessAllowed(request)
-        LOG.info("*** result ***" + result)
         if (request == null) {
           LOG.error("Internal error: null RangerAccessResult received back from isAccessAllowed")
           false

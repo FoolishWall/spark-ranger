@@ -38,6 +38,7 @@ case class RangerShowTablesCommand(child: ShowTablesCommand) extends RunnableCom
   private def toSparkPrivilegeObject(row: Row): SparkPrivilegeObject = {
     val database = row.getString(0)
     val table = row.getString(1)
+    LOG.info("*** table ***" + table)
     new SparkPrivilegeObject(SparkPrivilegeObjectType.TABLE_OR_VIEW, database, table)
   }
 }

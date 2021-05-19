@@ -17,6 +17,7 @@
 
 package org.apache.ranger.authorization.spark.authorizer
 
+import org.apache.commons.logging.LogFactory
 import org.apache.ranger.authorization.spark.authorizer.SparkObjectType.SparkObjectType
 import org.apache.ranger.plugin.policyengine.RangerAccessResourceImpl
 
@@ -68,6 +69,8 @@ class RangerSparkResource(
 
 object RangerSparkResource {
 
+  private val LOG = LogFactory.getLog(this.getClass.getSimpleName.stripSuffix("$"))
+
   def apply(objectType: SparkObjectType, databaseOrUrl: Option[String], tableOrUdf: String,
       column: String): RangerSparkResource = {
     new RangerSparkResource(objectType, databaseOrUrl, tableOrUdf, column)
@@ -75,6 +78,7 @@ object RangerSparkResource {
 
   def apply(objectType: SparkObjectType, databaseOrUrl: Option[String],
             tableOrUdf: String): RangerSparkResource = {
+    LOG.info("*** tableOrUdf ***" + tableOrUdf)
     new RangerSparkResource(objectType, databaseOrUrl, tableOrUdf)
   }
 

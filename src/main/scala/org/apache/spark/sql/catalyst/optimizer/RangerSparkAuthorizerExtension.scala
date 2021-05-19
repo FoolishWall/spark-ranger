@@ -52,9 +52,7 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
     LOG.info("*** spark.catalog.currentDatabase ***" + spark.catalog.currentDatabase)
     LOG.info("***plan***" + plan)
     plan match {
-      case s: ShowTablesCommand =>
-        LOG.info("*** ShowTablesCommand plan ***" + plan)
-        RangerShowTablesCommand(s)
+      case s: ShowTablesCommand => RangerShowTablesCommand(s)
       case s: ShowDatabasesCommand => RangerShowDatabasesCommand(s)
       case s@SetCommand(Some(("spark.sql.optimizer.excludedRules", Some(exclusions)))) =>
         authorizeSetCommandExcludedRules(exclusions)

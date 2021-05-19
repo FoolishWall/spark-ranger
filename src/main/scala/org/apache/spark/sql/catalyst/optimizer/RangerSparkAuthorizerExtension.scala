@@ -49,9 +49,12 @@ case class RangerSparkAuthorizerExtension(spark: SparkSession) extends Rule[Logi
    * @return a plan itself which has gone through the privilege check.
    */
   override def apply(plan: LogicalPlan): LogicalPlan = {
-    LOG.info("*** database ***" + spark.catalog.currentDatabase)
+    LOG.info("*** spark.catalog.currentDatabase ***" + spark.catalog.currentDatabase)
     plan match {
-      case s: ShowTablesCommand => RangerShowTablesCommand(s)
+      case s: ShowTablesCommand =>
+        LOG.info("*** ShowTablesCommand database ***" + spark.catalog.currentDatabase)
+        LOG.info("*** ShowTablesCommand plan ***" + plan)
+        RangerShowTablesCommand(s)
       case s: ShowDatabasesCommand => RangerShowDatabasesCommand(s)
       case s@SetCommand(Some(("spark.sql.optimizer.excludedRules", Some(exclusions)))) =>
         authorizeSetCommandExcludedRules(exclusions)

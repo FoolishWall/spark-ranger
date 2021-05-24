@@ -123,7 +123,6 @@ object RangerSparkAuthorizer {
             }
           }
         } else {
-          LOG.info("***request***" + request)
           //***request***, example : RangerAccessRequestImpl={
           // resource={RangerResourceImpl={ownerUser={null} elements={database=wall; } }}
           // accessType={_any} user={eos}
@@ -159,7 +158,6 @@ object RangerSparkAuthorizer {
       case Some(resource) =>
         val request =
           new RangerSparkAccessRequest(resource, user, groups, sparkPlugin.getClusterName)
-        LOG.info("*** request ***" + request)
         val result = sparkPlugin.isAccessAllowed(request)
         if (request == null) {
           LOG.error("Internal error: null RangerAccessResult received back from isAccessAllowed")

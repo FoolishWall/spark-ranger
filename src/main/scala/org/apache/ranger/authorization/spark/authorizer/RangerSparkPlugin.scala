@@ -35,8 +35,8 @@ class RangerSparkPlugin private extends RangerBasePlugin("spark", "sparkSql") {
 
   override def init(): Unit = {
     super.init()
-    val cacheDir = new File(rangerConf.get("ranger.plugin.spark.policy.cache.dir"))
-    val user = System.getProperty("user.name")
+//    val cacheDir = new File(rangerConf.get("ranger.plugin.spark.policy.cache.dir"))
+//    val user = System.getProperty("user.name")
 //    if (cacheDir.exists() &&
 //      (!cacheDir.isDirectory || !cacheDir.canRead || !cacheDir.canWrite)) {
 //      throw new IOException("Policy cache directory already exists at" +
@@ -47,7 +47,7 @@ class RangerSparkPlugin private extends RangerBasePlugin("spark", "sparkSql") {
 //      throw new IOException("Unable to create ranger policy cache directory at" +
 //        cacheDir.getAbsolutePath)
 //    }
-    LOG.info("Policy cache directory successfully set to " + cacheDir.getAbsolutePath)
+//    LOG.info("Policy cache directory successfully set to " + cacheDir.getAbsolutePath)
   }
 }
 

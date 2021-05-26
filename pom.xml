@@ -519,7 +519,7 @@
                 <javax.persistence.version>2.1.0</javax.persistence.version>
                 <jersey-bundle.version>1.19.3</jersey-bundle.version>
                 <noggit.version>0.6</noggit.version>
-                <ranger.version>1.2.0</ranger.version>
+                <ranger.version>1.2.0.3.1.4.0-315-edh-3.1.4-1-SNAPSHOT</ranger.version>
                 <solr.version>5.5.4</solr.version>
             </properties>
         </profile>

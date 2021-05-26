@@ -37,16 +37,16 @@ class RangerSparkPlugin private extends RangerBasePlugin("spark", "sparkSql") {
     super.init()
     val cacheDir = new File(rangerConf.get("ranger.plugin.spark.policy.cache.dir"))
     val user = System.getProperty("user.name")
-    if (cacheDir.exists() &&
-      (!cacheDir.isDirectory || !cacheDir.canRead || !cacheDir.canWrite)) {
-      throw new IOException("Policy cache directory already exists at" +
-        cacheDir.getAbsolutePath + ", but it is unavailable for " + user)
-    }
-
-    if (!cacheDir.exists() && !cacheDir.mkdirs()) {
-      throw new IOException("Unable to create ranger policy cache directory at" +
-        cacheDir.getAbsolutePath)
-    }
+//    if (cacheDir.exists() &&
+//      (!cacheDir.isDirectory || !cacheDir.canRead || !cacheDir.canWrite)) {
+//      throw new IOException("Policy cache directory already exists at" +
+//        cacheDir.getAbsolutePath + ", but it is unavailable for " + user)
+//    }
+//
+//    if (!cacheDir.exists() && !cacheDir.mkdirs()) {
+//      throw new IOException("Unable to create ranger policy cache directory at" +
+//        cacheDir.getAbsolutePath)
+//    }
     LOG.info("Policy cache directory successfully set to " + cacheDir.getAbsolutePath)
   }
 }

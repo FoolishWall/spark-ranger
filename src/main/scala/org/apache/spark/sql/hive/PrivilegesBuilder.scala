@@ -246,7 +246,6 @@ private[sql] object PrivilegesBuilder {
         addTableOrViewLevelObjs(c.table.identifier, outputObjs)
 
       case c: CreateFunctionCommand =>
-        LOG.info("*** CreateFunctionCommand {} . c.databaseName {} . c.functionName {} . ***" + c + ";" +c.databaseName + ";" +c.functionName)
         addDbLevelObjs(spark.catalog.currentDatabase, outputObjs)
         addFunctionLevelObjs(Some(spark.catalog.currentDatabase), c.functionName, outputObjs)
 

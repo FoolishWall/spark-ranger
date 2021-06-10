@@ -213,7 +213,7 @@ object RangerSparkAuthorizer {
             case CREATEDATABASE if obj.getType == SparkPrivilegeObjectType.DATABASE =>
               SparkAccessType.CREATE
             case CREATEFUNCTION if obj.getType == SparkPrivilegeObjectType.FUNCTION =>
-              SparkAccessType.CREATE
+              SparkAccessType.TEMPUDFADMIN
             case CREATETABLE | CREATEVIEW | CREATETABLE_AS_SELECT
               if obj.getType == SparkPrivilegeObjectType.TABLE_OR_VIEW =>
               if (isInput) SparkAccessType.SELECT else SparkAccessType.CREATE

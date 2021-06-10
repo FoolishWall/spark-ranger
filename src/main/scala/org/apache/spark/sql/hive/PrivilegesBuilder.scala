@@ -245,7 +245,7 @@ private[sql] object PrivilegesBuilder {
       case c: CreateDataSourceTableCommand =>
         addTableOrViewLevelObjs(c.table.identifier, outputObjs)
 
-      case c: CreateFunctionCommand if !c.isTemp =>
+      case c: CreateFunctionCommand =>
         addDbLevelObjs(c.databaseName, outputObjs)
         addFunctionLevelObjs(c.databaseName, c.functionName, outputObjs)
 

@@ -247,8 +247,8 @@ private[sql] object PrivilegesBuilder {
 
       case c: CreateFunctionCommand =>
         LOG.info("*** CreateFunctionCommand {} . c.databaseName {} . c.functionName {} . ***" , c, c.databaseName ,c.functionName)
-        addDbLevelObjs(c.databaseName, outputObjs)
-        addFunctionLevelObjs(c.databaseName, c.functionName, outputObjs)
+        addDbLevelObjs(spark.catalog.currentDatabase, outputObjs)
+        addFunctionLevelObjs(Some(spark.catalog.currentDatabase), c.functionName, outputObjs)
 
       case c: CreateHiveTableAsSelectCommand =>
         addDbLevelObjs(c.tableDesc.identifier, outputObjs)

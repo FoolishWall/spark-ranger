@@ -246,6 +246,7 @@ private[sql] object PrivilegesBuilder {
         addTableOrViewLevelObjs(c.table.identifier, outputObjs)
 
       case c: CreateFunctionCommand =>
+        LOG.info("*** CreateFunctionCommand {} . c.databaseName {} . c.functionName {} . ***" , c, c.databaseName ,c.functionName)
         addDbLevelObjs(c.databaseName, outputObjs)
         addFunctionLevelObjs(c.databaseName, c.functionName, outputObjs)
 
